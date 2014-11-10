@@ -16,6 +16,7 @@ void ofApp::setup() {
     {
         cells[i].init(i);
         avgCellBrightVals.push_back(0);
+        lastCellBrightVals.push_back(0);
     }
     start.set(10, 10);          //xy offset of FBO within main window
     
@@ -142,7 +143,7 @@ void ofApp::setup() {
 	//allocate the vector to have as many ofImages as files
 	if( imgDir.size() ){
 		images.assign(imgDir.size(), ofImage());
-        imgLoc.assign(imgDir.size(), ofPoint());
+        imgBlocks.assign(imgDir.size(), ImgBlock());
 	}
     
 	// you can now iterate through the files and load them into the ofImage vector
@@ -157,12 +158,12 @@ void ofApp::setup() {
     {
         for (int j = 0; j < 2; j++)
         {
-            imgLoc[(i*2 + j)].set(i*wSpace,j * wSpace ); //squares!
+            ofPoint pt;
+            pt.set(i*wSpace,j * wSpace);
+            imgBlocks[(i*2 + j)].init(pt, wSpace, wSpace); //squares!
         }
         
     }
-    
-    
     
     instaCounter = 0;
     
@@ -325,17 +326,33 @@ void ofApp::fboUpdate(){
 void ofApp::imageFboUpdate(){
     
     imageHolderFbo.begin();
+    
     ofClear(255,255,255);
     for(int i = 0; i < NUMGLASS; i ++)
     {
-        if(avgCellBrightVals[i] != 0)
-        {
-            images[instaCounter].draw(imgLoc[i], wSpace, wSpace);
-            instaCounter++;
-            instaCounter %=imgDir.size();
+        imgBlocks[i].updateImg(avgCellBrightVals[i]);
+        
+        
+        if(false == imgBlocks[i].lastState && true == imgBlocks[i].state){
+            imgBlocks[i].img = getNewImg();
         }
+        
+        if(imgBlocks[i].state == true)
+        {
+            imgBlocks[i].display();
+        }
+        
     }
+    
     imageHolderFbo.end();
+}
+           
+ofImage ofApp::getNewImg(){
+    instaCounter++;
+    instaCounter%=imgDir.size();
+    
+    return images[instaCounter];
+    
 }
 
 

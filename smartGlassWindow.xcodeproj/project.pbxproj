@@ -39,6 +39,7 @@
 		BA09A5EA19EEF07A00710DAF /* OscPrintReceivedElements.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BA09A5DB19EEF07A00710DAF /* OscPrintReceivedElements.cpp */; };
 		BA09A5EB19EEF07A00710DAF /* OscReceivedElements.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BA09A5DD19EEF07A00710DAF /* OscReceivedElements.cpp */; };
 		BA09A5EC19EEF07A00710DAF /* OscTypes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BA09A5DF19EEF07A00710DAF /* OscTypes.cpp */; };
+		BA79A9AF1A111E2500899E5A /* ImgBlock.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BA79A9AD1A111E2500899E5A /* ImgBlock.cpp */; };
 		BA88352319C87B3A0002FBC5 /* ofxImageSampler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BA88352119C87B3A0002FBC5 /* ofxImageSampler.cpp */; };
 		BA88352A19C9D2820002FBC5 /* ofxFastFboReader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BA88352819C9D2820002FBC5 /* ofxFastFboReader.cpp */; };
 		BA88353A19CA73CF0002FBC5 /* ofxXmlSettings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BA88353319CA73CF0002FBC5 /* ofxXmlSettings.cpp */; };
@@ -242,6 +243,8 @@
 		BA09A5DE19EEF07A00710DAF /* OscReceivedElements.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OscReceivedElements.h; sourceTree = "<group>"; };
 		BA09A5DF19EEF07A00710DAF /* OscTypes.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = OscTypes.cpp; sourceTree = "<group>"; };
 		BA09A5E019EEF07A00710DAF /* OscTypes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OscTypes.h; sourceTree = "<group>"; };
+		BA79A9AD1A111E2500899E5A /* ImgBlock.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ImgBlock.cpp; sourceTree = "<group>"; };
+		BA79A9AE1A111E2500899E5A /* ImgBlock.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImgBlock.h; sourceTree = "<group>"; };
 		BA88352119C87B3A0002FBC5 /* ofxImageSampler.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ofxImageSampler.cpp; sourceTree = "<group>"; };
 		BA88352219C87B3A0002FBC5 /* ofxImageSampler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ofxImageSampler.h; sourceTree = "<group>"; };
 		BA88352819C9D2820002FBC5 /* ofxFastFboReader.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ofxFastFboReader.cpp; sourceTree = "<group>"; };
@@ -1027,6 +1030,8 @@
 				BA05B46D19BA9B3F0007974B /* SmartGlass.h */,
 				BA02A4BA19E4C5F300DA3939 /* PointCirc.cpp */,
 				BA02A4BB19E4C5F300DA3939 /* PointCirc.h */,
+				BA79A9AD1A111E2500899E5A /* ImgBlock.cpp */,
+				BA79A9AE1A111E2500899E5A /* ImgBlock.h */,
 			);
 			path = src;
 			sourceTree = SOURCE_ROOT;
@@ -1180,6 +1185,7 @@
 				BA02A4DB19E61F1C00DA3939 /* ofxJSONElement.cpp in Sources */,
 				BA88353B19CA73CF0002FBC5 /* tinyxml.cpp in Sources */,
 				C602002DE761F9B52DB4400A /* ObjectFinder.cpp in Sources */,
+				BA79A9AF1A111E2500899E5A /* ImgBlock.cpp in Sources */,
 				BA05B46A19BA9AFE0007974B /* ofxSliderGroup.cpp in Sources */,
 				7CDAD32BE4FA46701E3552C7 /* RunningBackground.cpp in Sources */,
 				BA05B46E19BA9B3F0007974B /* SmartGlass.cpp in Sources */,

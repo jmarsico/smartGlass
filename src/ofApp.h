@@ -3,6 +3,7 @@
 #include "ofMain.h"
 #include "SmartGlass.h"
 #include "PointCirc.h"
+#include "ImgBlock.h"
 #include "ofxGui.h"
 #include "ofxImageSampler.h"
 #include "ofxFastFboReader.h"
@@ -23,6 +24,7 @@ public:
     void fboUpdate();
     void fboDraw();
     
+    ofImage getNewImg();
     void imageFboUpdate();
     
     void loadCellsFromXml();
@@ -98,11 +100,12 @@ public:
     
     ofDirectory imgDir;         //directory of instagram images
     vector<ofImage> images;     //vector to hold instagram images
-    vector<ofPoint> imgLoc;     //vector to hold location of instagram images
+    vector<ImgBlock> imgBlocks;     //vector to hold location of instagram images
     
     int instaCounter;
     float wSpace;
     
+    vector<int> lastCellBrightVals;
     
     ofFbo imageHolderFbo;
     
