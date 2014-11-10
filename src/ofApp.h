@@ -10,6 +10,7 @@
 #include "ofxXmlSettings.h"
 #include "ofxNetwork.h"
 #include "ofxOsc.h"
+#include "ofxSyphon.h"
 
 #define NUMGLASS 6
 #define PORT 12345
@@ -108,6 +109,7 @@ public:
     vector<int> lastCellBrightVals;
     
     ofFbo imageHolderFbo;
+    ofxSyphonServer instaGrid;
     
     
 

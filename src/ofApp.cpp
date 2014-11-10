@@ -164,6 +164,7 @@ void ofApp::setup() {
         }
         
     }
+    instaGrid.setName("InstaGrid");
     
     instaCounter = 0;
     
@@ -438,6 +439,8 @@ void ofApp::draw() {
     ofSetColor(255, 255);
     
     imageHolderFbo.draw(fbo.getWidth(), fbo.getHeight(), fbo.getWidth(), fbo.getHeight());
+    
+    instaGrid.publishTexture(&imageHolderFbo.getTextureReference());
     
     
 
