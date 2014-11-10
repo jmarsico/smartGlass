@@ -1,0 +1,15 @@
+<group>
+	<Show_Mask>0</Show_Mask>
+	<Background_Threshold>21</Background_Threshold>
+	<LearnvTime>50</LearnvTime>
+	<Ready_for_Cells>1</Ready_for_Cells>
+	<Link_Cells>0</Link_Cells>
+	<Gain>1.5</Gain>
+	<Smoothing>5</Smoothing>
+	<Send_OSC>0</Send_OSC>
+	<Send_UDP>0</Send_UDP>
+	<turnOn>0</turnOn>
+	<ramp_time>505</ramp_time>
+<group/>
+<creationRate>26</creationRate>
+</group>
