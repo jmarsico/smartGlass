@@ -12,4 +12,8 @@
 	<ramp_time>505</ramp_time>
 <group/>
 <creationRate>26</creationRate>
+<ball_velocity>10</ball_velocity>
+	<demo_mode>0</demo_mode>
+	<twitter_mode>0</twitter_mode>
+	<show_text>1</show_text>
 </group>

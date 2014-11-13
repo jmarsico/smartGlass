@@ -2,6 +2,6 @@
 
 int main() {
 	//ofSetLogLevel(OF_LOG_VERBOSE);
-    ofSetupOpenGL(1000, 700, OF_WINDOW);
+    ofSetupOpenGL(1200, 800, OF_FULLSCREEN);
 	ofRunApp(new ofApp());
 }

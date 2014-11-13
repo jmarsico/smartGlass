@@ -2,7 +2,13 @@
 
 void ofApp::setup() {
     ofSetFrameRate(30);
-    ofBackground(0);
+    ofBackground(43, 39, 39);
+    
+    int boxWidth = ofGetWidth() * 0.25;
+    
+    labelBox.set(0, 0, boxWidth, ofGetHeight() * 0.2);
+    twitterBox.set(0, labelBox.getHeight(), boxWidth, ofGetHeight() * 0.4);
+    instaBox.set(0, labelBox.getHeight() + twitterBox.getHeight(), boxWidth, ofGetHeight() * 0.4);
     
     //run the python twitter app
     ofSystem("run_twitter");
@@ -16,26 +22,25 @@ void ofApp::setup() {
     {
         cells[i].init(i);
         avgCellBrightVals.push_back(0);
-        lastCellBrightVals.push_back(0);
     }
     start.set(10, 10);          //xy offset of FBO within main window
     
     
     ////////////////// set up SmartGlass //////////////////
-    panelW = panelH = 120;
+    panelW = panelH = 240;
     
     
     //smartglass locations (these locations are pulled from rhino units
     // we will multiply by 10 below when creating the pane:
     ofPoint locs[NUMGLASS];
-    locs[0].set(12, 39);
-    locs[1].set(14, 24);
-    locs[2].set(22, 33);
-    locs[3].set(25, 22);
-    locs[4].set(31, 29);
-    locs[5].set(36.5, 17.5);
-                
-                
+    locs[0].set(0, 1);
+    locs[1].set(2, 16);
+    locs[2].set(10, 7);
+    locs[3].set(13, 18);
+    locs[4].set(19, 11);
+    locs[5].set(24.5, 22.5);
+
+
     
     for(int i = 0; i < NUMGLASS; i++)
     {
@@ -47,11 +52,11 @@ void ofApp::setup() {
         int y = j*(panelH - panelH * 0.2) + 100 + ofRandom(-30, 30);
          */
         
-        int xCoeff = 0;
-        int yCoeff = - 250;
+        int xCoeff = -40;
+        int yCoeff = - 400;
         
-        int locX = locs[i].x * 10 + xCoeff;
-        int locY = ofGetHeight() - locs[i].y * 10 + yCoeff;
+        int locX = locs[i].x * 20;
+        int locY = locs[i].y * 20;
         
         s.init(panelW, panelH, locX, locY );
         sg.push_back(s);
@@ -71,13 +76,9 @@ void ofApp::setup() {
     gui.add(bLinkCells.setup("Link Cells", false));
     gui.add(lightAmp.setup("Gain", 1.5, 0.5, 10.0));
     gui.add(avgAmt.setup("Smoothing", 5, 1, 100));
-    //gui.add(bSendOSC.setup("Send OSC", false));
     gui.add(bSendUDP.setup("Send UDP", false));
     gui.add(rampTime.setup("ramp time", 200, 10, 1000));
     gui.add(velocity.setup("ball velocity", 10, 1, 60));
-    gui.add(demoMode.setup("demo mode", false));
-    gui.add(twitterMode.setup("twitter mode" , false));
-    gui.add(bShowText.setup("show text" , false));
     
     gui.setPosition(0, ofGetHeight() - gui.getHeight());
     gui.loadFromFile("settings.xml");
@@ -91,15 +92,22 @@ void ofApp::setup() {
     debugGui.add(pane3.setup("pane 3", false));
     debugGui.add(pane4.setup("pane 4", false));
     debugGui.add(pane5.setup("pane 5", false));
+    debugGui.add(demoMode.setup("demo mode", false));
+    debugGui.add(twitterMode.setup("twitter mode" , false));
+    debugGui.add(bShowTestGrid.setup("show testGrid", false));
+    debugGui.add(bShowText.setup("show text" , true));
     debugGui.setPosition(gui.getWidth() + 5, ofGetHeight() - gui.getHeight());
     
     
     
     ////////////////// set up FBO //////////////////
-    fbo.allocate(320, 280, GL_RGBA);
+    fbo.allocate(twitterBox.getWidth(), twitterBox.getHeight(), GL_RGBA);
     fbo.begin();
     ofClear(255, 255, 255);
     fbo.end();
+    lastTime = 0;        //timer for circle animation
+    
+    //set up the ofPixels object that we'll use with sampleCell
     fboPixels.allocate(fbo.getWidth(), fbo.getHeight(), OF_IMAGE_COLOR_ALPHA);
     
     
@@ -109,32 +117,37 @@ void ofApp::setup() {
 	udpConnection.SetNonBlocking(true);
     
     
-    /////////////// setup up things for FBO content ///////////////
-    lastTime = 0;        //timer for circle animation
     
     /////////////// setup up OSC Receiver ///////////////
     // listen on the given port
 	ofLog() << "listening for osc messages on port " << PORT << "\n";
 	receiver.setup(PORT);
 
-    mainFont.loadFont("avenirnext.ttf", 100, true, true);
-    subFont.loadFont("avenirnext.ttf", 50, true,true);
+    mainFont.loadFont("Avenir-Light.ttf", 20, true, true);
+    subFont.loadFont("Avenir-Light.ttf", 10, true,true);
     
-    currentTopic = "waiting";
-    user = "waiting for User";
+    currentTopic = "tweet @news_glass";
+    user = "jmarsico";
     
     bShowGui = false;
     
     
     
     /////////////// setup images ///////////////
+    imgLength = 500;
+    int imgFBOwidth = imgLength * 3;
+    int imgFBOheight = imgLength * 2;
     
-    int imgFBOwidth = 1600;
-    int imgFBOheight = 1400;
     imageHolderFbo.allocate(imgFBOwidth, imgFBOheight, GL_RGBA);
     imageHolderFbo.begin();
     ofClear(255, 255, 255);
     imageHolderFbo.end();
+    
+    testGridFbo.allocate(imgFBOwidth, imgFBOheight, GL_RGBA);
+    testGridFbo.begin();
+    ofClear(255, 255, 255);
+    testGridFbo.end();
+    
     
     
     imgDir.listDir("/Users/jakobmarsico/Documents/thesis/python_twitter/images/");
@@ -143,7 +156,7 @@ void ofApp::setup() {
 	//allocate the vector to have as many ofImages as files
 	if( imgDir.size() ){
 		images.assign(imgDir.size(), ofImage());
-        imgBlocks.assign(imgDir.size(), ImgBlock());
+        imgBlocks.assign(NUMGLASS, ImgBlock());
 	}
     
 	// you can now iterate through the files and load them into the ofImage vector
@@ -152,23 +165,27 @@ void ofApp::setup() {
 	}
     
     //set up the locations of each image box in the matrix
-    wSpace = imgFBOwidth / 3;
     
     for(int i = 0; i < 3; i++)
     {
         for (int j = 0; j < 2; j++)
         {
             ofPoint pt;
-            pt.set(i*wSpace,j * wSpace);
-            imgBlocks[(i*2 + j)].init(pt, wSpace, wSpace); //squares!
+            pt.set(i*imgLength,j * imgLength);
+            imgBlocks[(i*2 + j)].init(pt, imgLength, imgLength); //squares!
         }
         
     }
+    
+
+    
+
     instaGrid.setName("InstaGrid");
+    testGrid.setName("TestGrid");
     
     instaCounter = 0;
     
-   
+    
 }
 
 ////////////////////////////////////////////////
@@ -186,7 +203,6 @@ void ofApp::update() {
     //------------------ FBO UPDATING ---------------------
     //create the conent within the FBO
     fboUpdate();
-    fboDraw();
     imageFboUpdate();
     
     //ofxFastFboReader;
@@ -198,7 +214,7 @@ void ofApp::update() {
         //if the first cell in the array is not set, start setting it also, wait for threshPix to have data
         if(!cells[0].isPointsSet() && !cells[0].isSettingPoints())
         {
-            cells[0].setPointsFirst(fboPixels, start);
+            cells[0].setPointsFirst(fboPixels, twitterBox.getTopLeft());
         }
         
         //if the first cell is set, use the second setup function
@@ -215,11 +231,11 @@ void ofApp::update() {
                     //set the first two points of this new cell to the last two points of previous cell
                     if(bLinkCells)
                     {
-                        cells[i].setPoints(cells[i-1].p[2], cells[i-1].p[3], fboPixels, start);
+                        cells[i].setPoints(cells[i-1].p[2], cells[i-1].p[3], fboPixels, twitterBox.getTopLeft());
                     }
                     else
                     {
-                        cells[i].setPointsFirst(fboPixels, start);
+                        cells[i].setPointsFirst(fboPixels, twitterBox.getTopLeft());
                     }
                 }
             }
@@ -256,6 +272,26 @@ void ofApp::update() {
     }
 }
 
+////////////////////////////////////////////////
+////////////////// Load Images /////////////////
+void ofApp::loadInstaImages(){
+    imgDir.listDir("/Users/jakobmarsico/Documents/thesis/python_twitter/images/");
+	imgDir.sort(); // in linux the file system doesn't return file lists ordered in alphabetical order
+    ofLog() << "Number of Images: " << imgDir.size();
+    
+	//allocate the vector to have as many ofImages as files
+	if( imgDir.size()> images.size())
+    {
+        images.clear();
+    }
+    
+	// you can now iterate through the files and load them into the ofImage vector
+	for(int i = 0; i < (int)imgDir.size(); i++){
+		images[i].loadImage(imgDir.getPath(i));
+	}
+
+}
+
 
 ////////////////////////////////////////////////
 ////////////////// FBO UPDATE ////////////////////
@@ -274,7 +310,7 @@ void ofApp::fboUpdate(){
             receiver.getNextMessage(&m);
             if(m.getAddress() == "/filter")
             {
-                ofLog() << "int: " << m.getArgAsInt32(0);
+                //ofLog() << "int: " << m.getArgAsInt32(0);
                 PointCirc c;
                 c.init(ofRandom(5,50), 0, ofRandom(0, fbo.getHeight()), ofRandom(velocity, velocity + 10), 0 );
                 circs.push_back(c);
@@ -283,6 +319,7 @@ void ofApp::fboUpdate(){
             {
                 currentTopic = m.getArgAsString(0);
                 ofLog()<< "topic: " << currentTopic;
+                //loadInstaImages();
                 
             }
             if(m.getAddress() == "/user")
@@ -313,7 +350,7 @@ void ofApp::fboUpdate(){
             circs[i].update();      //update the circs
             
             //if a circ is out of the fbo, kill it
-            if(circs[i].x > fbo.getWidth())
+            if(circs[i].x > fbo.getWidth() + 50)
             {
                 circs.erase(circs.begin() + i);
             }
@@ -344,14 +381,33 @@ void ofApp::imageFboUpdate(){
         }
         
     }
-    
     imageHolderFbo.end();
+    
+    testGridFbo.begin();
+    ofClear(255, 255, 255);
+    for(int i = 0; i < 3; i++)
+    {
+        for (int j = 0; j < 2; j++)
+        {
+            ofPoint pt;
+            pt.set(i*imgLength,j * imgLength);
+            ofSetColor(255 - i * 80, 0 + j * 100, 255 - j*10 + i * 80);
+            ofFill();
+            ofRect(pt.x, pt.y, imgLength, imgLength); //squares!
+        }
+        
+    }
+    testGridFbo.end();
+
 }
-           
+
+
+////////////////////////////////////////////////
+////////////////// Get New Image ////////////////////
 ofImage ofApp::getNewImg(){
     instaCounter++;
     instaCounter%=imgDir.size();
-    
+    images[instaCounter].loadImage(imgDir.getPath(instaCounter));
     return images[instaCounter];
     
 }
@@ -381,11 +437,9 @@ void ofApp::fboDraw(){
 ////////////////// MAIN-DRAW ///////////////////
 void ofApp::draw() {
     
-    //draw a rectangle around FBO
-    ofSetColor(255, 255, 255);
-    ofNoFill();
-    ofRect(start.x, start.y, fbo.getWidth(), fbo.getHeight());
-    fbo.draw(start.x, start.y);           //draw the FBO
+
+    fboDraw();
+    fbo.draw(twitterBox.x, twitterBox.y, twitterBox.getWidth(), twitterBox.getHeight());           //draw the FBO
 
     //decide to show the cells and control or not
     if(bShowGui)
@@ -402,48 +456,66 @@ void ofApp::draw() {
         ofDrawBitmapString("framerate: " + ofToString((int)ofGetFrameRate()), 0, ofGetHeight() - gui.getHeight());
     }
     
-    //draw the smartGlass
-    ofPushMatrix();
-        ofTranslate(400, 0);
+    //draw the instagrid and a box around it
+    ofSetColor(255, 255);
+    ofNoFill();
+    float fbowidth = instaBox.getWidth() * 0.8;
+    imageHolderFbo.draw(instaBox.getLeft() + instaBox.getWidth() * 0.1, instaBox.getTop() + 50, fbowidth, fbowidth * 0.66 );
+    
+    
+    
+    
+    
+    
+    
+    if(bShowTestGrid)
+    {
+        ofLog() << "showing testGrid";
         ofFill();
-        for(int i = 0; i < sg.size(); i++)
-        {
-            sg[i].display();
-        }
-    ofPopMatrix();
+        testGridFbo.draw(instaBox.getLeft() + instaBox.getWidth() * 0.1, instaBox.getTop() + 50, fbowidth, fbowidth * 0.66);
+    }
     
-    
-    
-    
-    
-    
+ 
 
     
-    ofSetColor(255);
+    //draw the text
+    ofSetColor(207);
     int mainFontW, mainFontH;
     
     mainFontW = mainFont.stringWidth(currentTopic);
-    int mainFontX = ofGetWidth()/2 - mainFontW/2;
-    int mainFontY = ofGetHeight() - gui.getHeight();
+    int mainFontX = labelBox.getLeft()+ 20;
+    int mainFontY = labelBox.getHeight() * 0.4;
     
     if(bShowText)
     {
         mainFont.drawString(currentTopic, mainFontX, mainFontY);
         
         int subFontX = mainFontX;
-        int subFontY = mainFontY + 50;
+        int subFontY = mainFontY + 20;
         
         subFont.drawString(user, subFontX, subFontY);
     }
 
-    ofSetColor(255, 255);
     
-    imageHolderFbo.draw(fbo.getWidth(), fbo.getHeight(), fbo.getWidth(), fbo.getHeight());
-    
-    instaGrid.publishTexture(&imageHolderFbo.getTextureReference());
-    
-    
+    //draw the smartGlass
+    ofPushMatrix();
+    ofTranslate(labelBox.getWidth() + 170, 70);
+    ofFill();
+    for(int i = 0; i < sg.size(); i++)
+    {
+        sg[i].display();
+    }
+    ofPopMatrix();
 
+    ofNoFill();
+    ofSetColor(77, 75, 74);
+    ofRect(labelBox);
+    ofRect(twitterBox);
+    ofRect(instaBox);
+    
+    //send to Syphon/Millumin
+    instaGrid.publishTexture(&imageHolderFbo.getTextureReference());
+    testGrid.publishTexture(&testGridFbo.getTextureReference());
     
 }
 

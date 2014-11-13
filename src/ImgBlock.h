@@ -25,6 +25,7 @@ public:
     bool state;
     bool lastState;
     float w,h;
+    float alpha;
     
     
 };

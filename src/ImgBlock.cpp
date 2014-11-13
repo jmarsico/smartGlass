@@ -17,6 +17,7 @@ void ImgBlock::init(ofPoint location, float _w, float _h){
     h = _h;
     state = false;
     lastState = false;
+    alpha = 0;
 }
 
 
@@ -24,6 +25,7 @@ void ImgBlock::init(ofPoint location, float _w, float _h){
 void ImgBlock::updateImg(float cellVal){
     
     lastState = state;
+    alpha = cellVal;
     
     if(cellVal != 0)
     {
@@ -38,6 +40,10 @@ void ImgBlock::updateImg(float cellVal){
 
 
 void ImgBlock::display(){
+    alpha = alpha * 10;
+    if(alpha > 255) alpha = 255;
+    
+    ofSetColor(255, alpha);
     img.draw(loc, w, h);
 }
 

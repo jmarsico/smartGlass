@@ -96,7 +96,7 @@ void SmartGlass::update(){
 
 //------------------ DISPLAY -------------------------
 void SmartGlass::display(){
-    ofSetColor(255, opacity);
+    ofSetColor(139, 132, 132, opacity);
     ofRect(rect);
 }
 

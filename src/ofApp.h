@@ -27,6 +27,7 @@ public:
     
     ofImage getNewImg();
     void imageFboUpdate();
+    void loadInstaImages();
     
     void loadCellsFromXml();
     void saveCellsToXml();
@@ -53,6 +54,7 @@ public:
     ofxToggle demoMode;
     ofxToggle twitterMode;
     ofxToggle bShowText;
+    ofxToggle bShowTestGrid;
     
     
     ofxPanel debugGui;
@@ -99,17 +101,21 @@ public:
     
     bool bShowGui;
     
+    //instagram image import stuff
     ofDirectory imgDir;         //directory of instagram images
     vector<ofImage> images;     //vector to hold instagram images
     vector<ImgBlock> imgBlocks;     //vector to hold location of instagram images
     
     int instaCounter;
-    float wSpace;
-    
-    vector<int> lastCellBrightVals;
-    
+    float imgLength;
+        
     ofFbo imageHolderFbo;
+    ofFbo testGridFbo;
+    
     ofxSyphonServer instaGrid;
+    ofxSyphonServer testGrid;
+    
+    ofRectangle labelBox, twitterBox, instaBox;
     
     
 

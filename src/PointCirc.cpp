@@ -29,6 +29,13 @@ void PointCirc::update(){
 
 
 void PointCirc::display(){
-    ofSetColor(255);
+    
+    ofSetColor(139, 132, 132);
+    ofFill();
     ofCircle(x, y, rad);
+    
+    ofSetColor(167,160,160);
+    ofNoFill();
+    ofCircle(x, y, rad+1);
+    
 }
