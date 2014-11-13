@@ -2,7 +2,7 @@
 
 void ofApp::setup() {
     ofSetFrameRate(30);
-    ofBackground(43, 39, 39);
+    ofBackground(36,32,32);
     
     int boxWidth = ofGetWidth() * 0.25;
     
@@ -437,6 +437,11 @@ void ofApp::fboDraw(){
 ////////////////// MAIN-DRAW ///////////////////
 void ofApp::draw() {
     
+    ofFill();
+    ofSetColor(43, 39, 39);
+    ofRect(labelBox);
+    ofRect(twitterBox);
+    ofRect(instaBox);
 
     fboDraw();
     fbo.draw(twitterBox.x, twitterBox.y, twitterBox.getWidth(), twitterBox.getHeight());           //draw the FBO
@@ -483,35 +488,59 @@ void ofApp::draw() {
     int mainFontW, mainFontH;
     
     mainFontW = mainFont.stringWidth(currentTopic);
-    int mainFontX = labelBox.getLeft()+ 20;
+    int mainFontX = labelBox.getLeft()+ 30;
     int mainFontY = labelBox.getHeight() * 0.4;
     
+    string tweetLabel = "TWEETS";
+    string instaLabel = "INSTAGRAMS";
+    string glassLabel = "SMARTGLASS REPRESENTATION";
+    
+    int tweetLabellngth = subFont.stringWidth(tweetLabel);
+    int instaLabellngth = subFont.stringWidth(instaLabel);
+    int glassLabellngth = subFont.stringWidth(glassLabel);
+
+    
+    //drawing text
     if(bShowText)
     {
-        mainFont.drawString(currentTopic, mainFontX, mainFontY);
+        ofSetColor(190, 179, 98);
+        int textmargin = 20;
         
+        //twitter data
+        mainFont.drawString(currentTopic, mainFontX, mainFontY);
         int subFontX = mainFontX;
         int subFontY = mainFontY + 20;
-        
         subFont.drawString(user, subFontX, subFontY);
+        
+        //labels
+        //twitter
+        subFont.drawString(tweetLabel, twitterBox.getRight() - tweetLabellngth - textmargin, twitterBox.getBottom() - textmargin);
+        
+        //instagrams
+        subFont.drawString(instaLabel, instaBox.getRight() - instaLabellngth - textmargin, instaBox.getBottom() - textmargin);
+        
+        //glass
+        subFont.drawString(glassLabel, ofGetWidth() - glassLabellngth - textmargin, ofGetHeight() - textmargin);
     }
-
     
     //draw the smartGlass
     ofPushMatrix();
-    ofTranslate(labelBox.getWidth() + 170, 70);
-    ofFill();
-    for(int i = 0; i < sg.size(); i++)
-    {
-        sg[i].display();
-    }
+        ofTranslate(labelBox.getWidth() + 170, 70);
+        ofFill();
+        for(int i = 0; i < sg.size(); i++)
+        {
+            sg[i].display();
+        }
     ofPopMatrix();
 
+    //draw the bounding boxes
     ofNoFill();
     ofSetColor(77, 75, 74);
     ofRect(labelBox);
     ofRect(twitterBox);
     ofRect(instaBox);
+
+    
     
     //send to Syphon/Millumin
     instaGrid.publishTexture(&imageHolderFbo.getTextureReference());
