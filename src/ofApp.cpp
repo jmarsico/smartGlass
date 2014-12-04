@@ -4,31 +4,32 @@ void ofApp::setup() {
     ofSetFrameRate(30);
     ofBackground(36,32,32);
     
+    //setup the layout rectangles
     int boxWidth = ofGetWidth() * 0.25;
-    
     labelBox.set(0, 0, boxWidth, ofGetHeight() * 0.2);
     twitterBox.set(0, labelBox.getHeight(), boxWidth, ofGetHeight() * 0.4);
     instaBox.set(0, labelBox.getHeight() + twitterBox.getHeight(), boxWidth, ofGetHeight() * 0.4);
     
-    //run the python twitter app
+    //run the python twitter app  **** this is not working!! ****
     ofSystem("run_twitter");
     ///////////////// set up XML  //////////////
     if(myXML.load("cellPoints.xml")) ofLog() << "XML loaded successfully";
     else ofLog() << "XML did not load, check data/ folder";
 
-    
-    ////////////////// set up sampleCell //////////////////
+
+    ////////////////// set up sampleCells //////////////////
     for(int i = 0; i < NUMGLASS; i++)
     {
         cells[i].init(i);
         avgCellBrightVals.push_back(0);
     }
-    start.set(10, 10);          //xy offset of FBO within main window
+    
+    //xy offset of FBO within main window
+    start.set(10, 10);
     
     
-    ////////////////// set up SmartGlass //////////////////
+    ////////////////// set up SmartGlass objects and simulation layout//////////////////
     panelW = panelH = 240;
-    
     
     //smartglass locations (these locations are pulled from rhino units
     // we will multiply by 10 below when creating the pane:
@@ -39,25 +40,17 @@ void ofApp::setup() {
     locs[3].set(13, 18);
     locs[4].set(19, 11);
     locs[5].set(24.5, 22.5);
-
-
     
     for(int i = 0; i < NUMGLASS; i++)
     {
-        SmartGlass s;           //construct the smartGlass
+        //construct the smartGlass object
+        SmartGlass s;
         
-        /*
-        //place the panes of glass in a matrix and "shuffle" a bit
-        int x = i*(panelW - panelW * 0.2) + 100 + ofRandom(-30, 30);
-        int y = j*(panelH - panelH * 0.2) + 100 + ofRandom(-30, 30);
-         */
-        
-        int xCoeff = -40;
-        int yCoeff = - 400;
-        
+        //set location
         int locX = locs[i].x * 20;
         int locY = locs[i].y * 20;
         
+        //init the smartglass object and add to sg vector
         s.init(panelW, panelH, locX, locY );
         sg.push_back(s);
     }
@@ -79,10 +72,8 @@ void ofApp::setup() {
     gui.add(bSendUDP.setup("Send UDP", false));
     gui.add(rampTime.setup("ramp time", 200, 10, 1000));
     gui.add(velocity.setup("ball velocity", 10, 1, 60));
-    
     gui.setPosition(0, ofGetHeight() - gui.getHeight());
     gui.loadFromFile("settings.xml");
-    
     
     debugGui.setup();
     debugGui.add(testMode.setup("test mode", false));
@@ -98,12 +89,13 @@ void ofApp::setup() {
     debugGui.add(bShowText.setup("show text" , true));
     debugGui.setPosition(gui.getWidth() + 5, ofGetHeight() - gui.getHeight());
     
+    bShowGui = false;
     
     
-    ////////////////// set up FBO //////////////////
+    ////////////////// set up twitter FBO //////////////////
     fbo.allocate(twitterBox.getWidth(), twitterBox.getHeight(), GL_RGBA);
     fbo.begin();
-    ofClear(255, 255, 255);
+        ofClear(255, 255, 255);
     fbo.end();
     lastTime = 0;        //timer for circle animation
     
@@ -111,29 +103,27 @@ void ofApp::setup() {
     fboPixels.allocate(fbo.getWidth(), fbo.getHeight(), OF_IMAGE_COLOR_ALPHA);
     
     
-    //create the connection and set to send to <ip address>:11999
-	udpConnection.Create();
-	udpConnection.Connect("192.168.2.5",11999);
-	udpConnection.SetNonBlocking(true);
-    
-    
-    
     /////////////// setup up OSC Receiver ///////////////
     // listen on the given port
 	ofLog() << "listening for osc messages on port " << PORT << "\n";
 	receiver.setup(PORT);
 
+    //set up fonts for presentation
     mainFont.loadFont("Avenir-Light.ttf", 20, true, true);
     subFont.loadFont("Avenir-Light.ttf", 10, true,true);
     
+    //intro text
     currentTopic = "tweet @news_glass";
     user = "jmarsico";
     
-    bShowGui = false;
+    
+    /////////////// setup UDP sender for rasperryPi (with internet sharing) /////////////////
+	udpConnection.Create();
+	udpConnection.Connect("192.168.2.5",11999);
+	udpConnection.SetNonBlocking(true);
     
     
-    
-    /////////////// setup images ///////////////
+    /////////////// setup instagram images ///////////////
     imgLength = 500;
     int imgFBOwidth = imgLength * 3;
     int imgFBOheight = imgLength * 2;
@@ -148,10 +138,9 @@ void ofApp::setup() {
     ofClear(255, 255, 255);
     testGridFbo.end();
     
-    
-    
     imgDir.listDir("/Users/jakobmarsico/Documents/thesis/python_twitter/images/");
 	imgDir.sort(); // in linux the file system doesn't return file lists ordered in alphabetical order
+    instaCounter = 0;
     
 	//allocate the vector to have as many ofImages as files
 	if( imgDir.size() ){
@@ -164,8 +153,8 @@ void ofApp::setup() {
 		images[i].loadImage(imgDir.getPath(i));
 	}
     
-    //set up the locations of each image box in the matrix
     
+    //set up the locations of each image box in the matrix
     for(int i = 0; i < 3; i++)
     {
         for (int j = 0; j < 2; j++)
@@ -174,31 +163,23 @@ void ofApp::setup() {
             pt.set(i*imgLength,j * imgLength);
             imgBlocks[(i*2 + j)].init(pt, imgLength, imgLength); //squares!
         }
-        
     }
     
-
-    
-
+    //setup syphon names for instagrid and testgrid
     instaGrid.setName("InstaGrid");
     testGrid.setName("TestGrid");
-    
-    instaCounter = 0;
-    
-    
 }
+
+
 
 ////////////////////////////////////////////////
 ////////////////// UPDATE //////////////////////
 void ofApp::update() {
     
     //------------------ UPDATES FROM GUI ----------------
-    //load cells
     if(bSaveCells) saveCellsToXml();
     if(bLoadCells) loadCellsFromXml();
     if(bSendUDP) sendLights();
-
-    
     
     //------------------ FBO UPDATING ---------------------
     //create the conent within the FBO
@@ -208,7 +189,9 @@ void ofApp::update() {
     //ofxFastFboReader;
     fastFBO.readToPixels(fbo, fboPixels, OF_IMAGE_COLOR_ALPHA);
     
-    //----------------- CELLS -------------------------
+    //----------------- SAMPLE CELLS -------------------------
+    
+    //----------------- drawing the sample cells -------------
     if(bReady)
     {
         //if the first cell in the array is not set, start setting it also, wait for threshPix to have data
@@ -242,6 +225,7 @@ void ofApp::update() {
         }
     }
     
+    //reset the cells
     if(cellReset)
     {
         for(int i = 0; i < NUMGLASS; i ++)
@@ -253,18 +237,21 @@ void ofApp::update() {
         bReady = false;
     }
     
+    //for some reason, we need to do this with int from GUI
     int averageAmount = avgAmt;
     
     //if a cell is set, go ahead and start getting its brightness
     for(int i = 0; i < NUMGLASS; i++)
     {
-        if(cells[i].isPointsSet()){
+        if(cells[i].isPointsSet())
+        {
             cells[i].getCellBrightness(fboPixels);
             avgCellBrightVals[i] = cells[i].getAverageBrightness(averageAmount);
             sg[i].setOpacity(avgCellBrightVals[i]);
         }
     }
     
+    //update the smartglass objects
     for (int i = 0; i < sg.size(); i++)
     {
         sg[i].setRampTimeMillis(rampTime);
@@ -272,25 +259,6 @@ void ofApp::update() {
     }
 }
 
-////////////////////////////////////////////////
-////////////////// Load Images /////////////////
-void ofApp::loadInstaImages(){
-    imgDir.listDir("/Users/jakobmarsico/Documents/thesis/python_twitter/images/");
-	imgDir.sort(); // in linux the file system doesn't return file lists ordered in alphabetical order
-    ofLog() << "Number of Images: " << imgDir.size();
-    
-	//allocate the vector to have as many ofImages as files
-	if( imgDir.size()> images.size())
-    {
-        images.clear();
-    }
-    
-	// you can now iterate through the files and load them into the ofImage vector
-	for(int i = 0; i < (int)imgDir.size(); i++){
-		images[i].loadImage(imgDir.getPath(i));
-	}
-
-}
 
 
 ////////////////////////////////////////////////
@@ -401,9 +369,29 @@ void ofApp::imageFboUpdate(){
 
 }
 
+////////////////////////////////////////////////
+////////////////// Load Images /////////////////
+void ofApp::loadInstaImages(){
+    imgDir.listDir("/Users/jakobmarsico/Documents/thesis/python_twitter/images/");
+	imgDir.sort(); // in linux the file system doesn't return file lists ordered in alphabetical order
+    ofLog() << "Number of Images: " << imgDir.size();
+    
+	//allocate the vector to have as many ofImages as files
+	if( imgDir.size()> images.size())
+    {
+        images.clear();
+    }
+    
+	// you can now iterate through the files and load them into the ofImage vector
+	for(int i = 0; i < (int)imgDir.size(); i++){
+		images[i].loadImage(imgDir.getPath(i));
+	}
+    
+}
+
 
 ////////////////////////////////////////////////
-////////////////// Get New Image ////////////////////
+////////////////// Get New Image ///////////////
 ofImage ofApp::getNewImg(){
     instaCounter++;
     instaCounter%=imgDir.size();
@@ -414,10 +402,10 @@ ofImage ofApp::getNewImg(){
 
 
 ////////////////////////////////////////////////
-////////////////// FBO DRAW ////////////////////
+////////////// Twitter FBO DRAW ////////////////
 void ofApp::fboDraw(){
-    fbo.begin();
     
+    fbo.begin();
         ofClear(0);
         if(circs.size() > 0)
         {
@@ -426,10 +414,7 @@ void ofApp::fboDraw(){
                 circs[i].display();
             }
         }
-    
-    
     fbo.end();
-
 }
 
 
@@ -446,20 +431,6 @@ void ofApp::draw() {
     fboDraw();
     fbo.draw(twitterBox.x, twitterBox.y, twitterBox.getWidth(), twitterBox.getHeight());           //draw the FBO
 
-    //decide to show the cells and control or not
-    if(bShowGui)
-    {
-        gui.draw();                           //draw GUIs
-        debugGui.draw();
-        
-        //draw the cells
-        for(int i = 0; i < NUMGLASS; i++)
-        {
-            cells[i].draw();
-        }
-        
-        ofDrawBitmapString("framerate: " + ofToString((int)ofGetFrameRate()), 0, ofGetHeight() - gui.getHeight());
-    }
     
     //draw the instagrid and a box around it
     ofSetColor(255, 255);
@@ -467,12 +438,7 @@ void ofApp::draw() {
     float fbowidth = instaBox.getWidth() * 0.8;
     imageHolderFbo.draw(instaBox.getLeft() + instaBox.getWidth() * 0.1, instaBox.getTop() + 50, fbowidth, fbowidth * 0.66 );
     
-    
-    
-    
-    
-    
-    
+    //draw the testGrid
     if(bShowTestGrid)
     {
         ofLog() << "showing testGrid";
@@ -480,13 +446,9 @@ void ofApp::draw() {
         testGridFbo.draw(instaBox.getLeft() + instaBox.getWidth() * 0.1, instaBox.getTop() + 50, fbowidth, fbowidth * 0.66);
     }
     
- 
-
-    
-    //draw the text
+    //draw the lables
     ofSetColor(207);
     int mainFontW, mainFontH;
-    
     mainFontW = mainFont.stringWidth(currentTopic);
     int mainFontX = labelBox.getLeft()+ 30;
     int mainFontY = labelBox.getHeight() * 0.4;
@@ -540,7 +502,20 @@ void ofApp::draw() {
     ofRect(twitterBox);
     ofRect(instaBox);
 
-    
+    //show GUI and sampleCells or not
+    if(bShowGui)
+    {
+        gui.draw();                           //draw GUIs
+        debugGui.draw();
+        
+        //draw the cells
+        for(int i = 0; i < NUMGLASS; i++)
+        {
+            cells[i].draw();
+        }
+        
+        ofDrawBitmapString("framerate: " + ofToString((int)ofGetFrameRate()), 0, ofGetHeight() - gui.getHeight());
+    }
     
     //send to Syphon/Millumin
     instaGrid.publishTexture(&imageHolderFbo.getTextureReference());
@@ -557,7 +532,7 @@ void ofApp::loadCellsFromXml(){
     for(int i = 0; i < NUMGLASS; i++)
     {
         myXML.pushTag("CELL", i);
-        cells[i].setPointsFirst(fboPixels, start);
+        cells[i].setPointsFirst(fboPixels, twitterBox.getTopLeft());
         
         for(int j = 0; j < 4; j++)
         {
@@ -613,7 +588,7 @@ void ofApp::saveCellsToXml(){
 //////////////////////////// RUN LIGHTS //////////////////////////////////
 void ofApp::sendLights(){
     
-    
+    //if not in testMode, send the messages to rPi based on state of smartGlass objects
     if(!testMode)
     {
         string message = "";
@@ -626,7 +601,7 @@ void ofApp::sendLights(){
         ofLog() << "Message Length: " << message.length();
     }
     
-    
+    //if in testMode, control state of each smartglass one by one
     if(testMode)
     {
         string testMess = "";
@@ -665,8 +640,6 @@ void ofApp::sendLights(){
     }
     
 }
-
-
 
 void ofApp::keyPressed(int key)
 {

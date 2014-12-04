@@ -40,7 +40,7 @@ void ImgBlock::updateImg(float cellVal){
 
 
 void ImgBlock::display(){
-    alpha = alpha * 10;
+    alpha = alpha * 200;
     if(alpha > 255) alpha = 255;
     
     ofSetColor(255, alpha);

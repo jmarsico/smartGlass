@@ -1,19 +1,22 @@
 #pragma once
 
 #include "ofMain.h"
-#include "SmartGlass.h"
-#include "PointCirc.h"
-#include "ImgBlock.h"
 #include "ofxGui.h"
-#include "ofxImageSampler.h"
-#include "ofxFastFboReader.h"
-#include "ofxXmlSettings.h"
-#include "ofxNetwork.h"
-#include "ofxOsc.h"
-#include "ofxSyphon.h"
+#include "ofxFastFboReader.h"   //getting FBO back into ofPixels
+#include "ofxXmlSettings.h"     //saving GUI settings
+#include "ofxNetwork.h"         //for sending UDP to rPi controlling SSRs
+#include "ofxOsc.h"             //for receiving OSC twitter pings from python
+#include "ofxSyphon.h"          //for sending instaFBO to millumin
 
-#define NUMGLASS 6
-#define PORT 12345
+#include "ofxImageSampler.h"    //down-resing from video or FBO->ofPixels
+
+#include "SmartGlass.h"         //smartglass sim object
+#include "PointCirc.h"          //twitter circles
+#include "ImgBlock.h"           //instagram blocks
+
+
+#define NUMGLASS 6          //how many panes of glass do we have?
+#define PORT 12345          //osc messages come here.
 
 class ofApp : public ofBaseApp {
 public:
@@ -33,7 +36,7 @@ public:
     void saveCellsToXml();
     void sendLights();
     
-    
+    //two GUIs + XML to save settings
     ofxPanel gui;
     ofxButton bLoadCells;
     ofxButton bSaveCells;
@@ -56,7 +59,6 @@ public:
     ofxToggle bShowText;
     ofxToggle bShowTestGrid;
     
-    
     ofxPanel debugGui;
     ofxToggle testMode;
     ofxToggle pane0;
@@ -65,14 +67,15 @@ public:
     ofxToggle pane3;
     ofxToggle pane4;
     ofxToggle pane5;
+    ofxXmlSettings myXML;
     
+    bool bShowGui;
     
-    //FBO animation stuff
+    //Twitter FBO animation stuff
     ofFbo fbo;
     ofPixels fboPixels;
     ofImage fboImage;
     ofxFastFboReader fastFBO;
-    
     vector<PointCirc> circs;
     int time;
     int lastTime;
@@ -85,36 +88,29 @@ public:
     //smartglass stuff
     vector<SmartGlass> sg;
     int panelW, panelH;
-
-    ofxXmlSettings myXML;
-    
-    
     
     //twitter string stuff
     ofxUDPManager udpConnection;
     ofxOscReceiver receiver;
     string currentTopic;
     string user;
-    
     ofTrueTypeFont mainFont;
     ofTrueTypeFont subFont;
     
-    bool bShowGui;
-    
     //instagram image import stuff
-    ofDirectory imgDir;         //directory of instagram images
-    vector<ofImage> images;     //vector to hold instagram images
+    ofDirectory imgDir;             //directory of instagram images
+    vector<ofImage> images;         //vector to hold instagram images
     vector<ImgBlock> imgBlocks;     //vector to hold location of instagram images
-    
     int instaCounter;
     float imgLength;
-        
     ofFbo imageHolderFbo;
-    ofFbo testGridFbo;
-    
     ofxSyphonServer instaGrid;
+    
+    //testGrid for projection mapping
+    ofFbo testGridFbo;
     ofxSyphonServer testGrid;
     
+    //layout stuff
     ofRectangle labelBox, twitterBox, instaBox;
     
     
