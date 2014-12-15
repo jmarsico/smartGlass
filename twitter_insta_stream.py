@@ -16,10 +16,10 @@ import os
 
 
 # twitter params
-APP_KEY="Wymuwx2Vk2XvTAoMDvrhC8W7i"
-APP_SECRET="ssogvH7nGscxZ1Q4v3Aeehdbg7S6ex5HcA0w5jMyJDjjDoIbZT"
-OAUTH_TOKEN="2827692280-9NKGuVJeSlFyc96rj9sTOHnGbe7ADhouoook945"
-OAUTH_TOKEN_SECRET="RuzHzw4eXJ0SGfHRIDcTe9paAsEblqTkULlS5CT3377WY"
+APP_KEY=<your key>
+APP_SECRET=<your app_secret>
+OAUTH_TOKEN=<your_token>
+OAUTH_TOKEN_SECRET=<yourTokenSecret>
 
 #OSC params
 IP_ADDRESS = 'localhost'
@@ -27,9 +27,9 @@ PORT = 12345
 
 #Instagram client ID and client secret
 CONFIG = {
-    'client_id': '90df69fa30704818a9d7dc3730d98509',
-    'client_secret': '953a7db6a2ef46d0a7ba59cb87b90e17',
-    'redirect_uri': 'http://localhost:8515/oauth_callback'
+    'client_id': <your_ID>,
+    'client_secret': <your_cliendSecret>,
+    'redirect_uri': <your URL>
 }
 
 
